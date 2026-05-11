@@ -394,18 +394,3 @@ SKILL_ALIASES = {
 
 If the new skill is a multi-word phrase (e.g. `"natural language processing"`), also add it to the `MULTI_WORD_PHRASES` list.
 
----
-
-## Architecture
-
-```mermaid
-flowchart TD
-    A[Raw skill string<br/>\"Pyhton, MachineLearning, Deep-learning\"] --> B(skill_normalizer.py<br/>lowercase &rarr; protect phrases &rarr; split &rarr; clean &rarr; alias &rarr; dedup)
-    B --> C[Canonical skill list<br/>'python', 'machine_learning', 'deep_learning']
-    C --> D[Resumes<br/>TF-IDF Vectors]
-    C --> E[JDs<br/>Binary Vectors]
-    D --> F(Cosine Similarity<br/>cosine_match.py)
-    E --> F
-    F --> G[Ranked Candidates]
-```
-
