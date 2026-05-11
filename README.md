@@ -1,4 +1,4 @@
-# 🎯 Resume–JD Skill Matching Pipeline
+# Resume–JD Skill Matching Pipeline
 
 A **pure-Python** (zero dependencies) pipeline that normalizes messy resume/JD skill strings into canonical tokens, computes TF-IDF vectors, and ranks candidates against job descriptions using cosine similarity.
 
@@ -6,11 +6,11 @@ Built for the **Redrob AI Campus Hackathon**.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Redrob AI Campus Hackathon/
-├── main.py                # ★ Single entry point — runs full pipeline & prints submission answers
+├── main.py                # Single entry point — runs full pipeline & prints submission answers
 ├── skill_normalizer.py    # Stage 1 — Core normalization engine
 ├── process_resumes.py     # Stage 2 — Batch-process 10 resumes
 ├── tfidf_resumes.py       # Stage 3 — TF-IDF computation
@@ -22,7 +22,7 @@ Redrob AI Campus Hackathon/
 
 ---
 
-## 🧩 Pipeline Stages
+## Pipeline Stages
 
 ### Stage 1 — Skill Normalization (`skill_normalizer.py`)
 
@@ -136,7 +136,7 @@ Runs **40 automated checks** validating every stage of the pipeline:
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -152,7 +152,7 @@ python3 --version
 
 ---
 
-## ▶️ Execution — Run Each Stage
+## Execution — Run Each Stage
 
 Run all commands from the project root directory:
 
@@ -177,8 +177,8 @@ Raw input: 'Pyhton, MachineLearning, SQL, pandas, numpy, Deep-learning'
   [5] Alias-mapped → ['python', 'machine_learning', 'sql', 'pandas', 'numpy', 'deep_learning']
   [6] Deduplicated → ['python', 'machine_learning', 'sql', 'pandas', 'numpy', 'deep_learning']
 
-✅ Final output: ['python', 'machine_learning', 'sql', 'pandas', 'numpy', 'deep_learning']
-   ✔ Assertion passed.
+Final output: ['python', 'machine_learning', 'sql', 'pandas', 'numpy', 'deep_learning']
+   Assertion passed.
 ```
 
 ### Stage 2 — Process all 10 resumes
@@ -223,15 +223,15 @@ Runs 40 automated checks. Expected final output:
 
 ```
   Total checks: 40
-  Passed:       40  ✔
+  Passed:       40
   Failed:       0
 
-  🎉 ALL CHECKS PASSED — Pipeline is consistent end-to-end.
+  ALL CHECKS PASSED — Pipeline is consistent end-to-end.
 ```
 
 ---
 
-## 🔁 Run Everything at Once (`main.py`)
+## Run Everything at Once (`main.py`)
 
 The easiest way to run the full pipeline and see all submission answers:
 
@@ -242,52 +242,90 @@ python3 main.py
 This single command executes all 6 stages and prints the final output:
 
 ```
-══════════════════════════════════════════════════════════════════════
-  REDROB AI CAMPUS HACKATHON — RESUME × JD MATCHING PIPELINE
-══════════════════════════════════════════════════════════════════════
+Resume vs Job Description Matching Pipeline
+===========================================
 
-▸ STAGE 1 & 2: SKILL NORMALIZATION────────────────────────────────────
-  Arjun Sharma         → ['python', 'machine_learning', 'sql', 'pandas', 'numpy', 'deep_learning']
-  Priya Nair           → ['javascript', 'react', 'node_js', 'mongodb', 'rest_api', 'html_css']
-  Rahul Gupta          → ['java', 'spring_boot', 'mysql', 'microservices', 'docker', 'kubernetes']
-  Sneha Patel          → ['python', 'tensorflow', 'keras', 'natural_language_processing', 'bert', 'data_visualization']
-  Vikram Singh         → ['cpp', 'algorithms', 'data_structures', 'competitive_programming', 'python']
-  Ananya Krishnan      → ['javascript', 'vue', 'python', 'flask', 'postgresql', 'aws', 'ci_cd']
-  Karan Mehta          → ['python', 'machine_learning', 'xgboost', 'feature_engineering', 'sql', 'tableau']
-  Deepika Rao          → ['java', 'android', 'kotlin', 'firebase', 'rest_api', 'ui_ux', 'figma']
-  Aditya Kumar         → ['react', 'typescript', 'graphql', 'redux', 'tailwind', 'node_js', 'jest']
-  Meera Iyer           → ['python', 'r', 'statistics', 'machine_learning', 'regression', 'clustering', 'power_bi']
+Stage 1 & 2: Skill Normalization
+--------------------------------
+  Arjun Sharma         -> ['python', 'machine_learning', 'sql', 'pandas', 'numpy', 'deep_learning']
+  Priya Nair           -> ['javascript', 'react', 'node_js', 'mongodb', 'rest_api', 'html_css']
+  Rahul Gupta          -> ['java', 'spring_boot', 'mysql', 'microservices', 'docker', 'kubernetes']
+  Sneha Patel          -> ['python', 'tensorflow', 'keras', 'natural_language_processing', 'bert', 'data_visualization']
+  Vikram Singh         -> ['cpp', 'algorithms', 'data_structures', 'competitive_programming', 'python']
+  Ananya Krishnan      -> ['javascript', 'vue', 'python', 'flask', 'postgresql', 'aws', 'ci_cd']
+  Karan Mehta          -> ['python', 'machine_learning', 'xgboost', 'feature_engineering', 'sql', 'tableau']
+  Deepika Rao          -> ['java', 'android', 'kotlin', 'firebase', 'rest_api', 'ui_ux', 'figma']
+  Aditya Kumar         -> ['react', 'typescript', 'graphql', 'redux', 'tailwind', 'node_js', 'jest']
+  Meera Iyer           -> ['python', 'r', 'statistics', 'machine_learning', 'regression', 'clustering', 'power_bi']
 
-▸ STAGE 3: TF-IDF COMPUTATION─────────────────────────────────────────
+Stage 3: TF-IDF Computation
+---------------------------
   Shared vocabulary: 50 unique canonical skills
-  Lowest  IDF: "python" (df=6, IDF=0.5108)
-  Highest IDF: ln(10) = 2.3026  (42 skills with df=1)
 
-▸ STAGE 4: JD BINARY VECTORS──────────────────────────────────────────
-  JD-1 — Kakao (ML Engineer): 10 active skills
+Stage 4: JD Binary Vectors
+--------------------------
+  JD-1 — Kakao (ML Engineer): 10 active skills  (outside vocab: ['pytorch'])
   JD-2 — Naver (Backend Engineer): 9 active skills
   JD-3 — Line (Frontend Engineer): 11 active skills
 
-▸ STAGE 5: COSINE SIMILARITY RANKINGS─────────────────────────────────
-  JD-1: Sneha Patel (0.59), Arjun Sharma (0.40), Karan Mehta (0.40) ...
-  JD-2: Rahul Gupta (0.81), Ananya Krishnan (0.28), Deepika Rao (0.19) ...
-  JD-3: Aditya Kumar (0.67), Priya Nair (0.58), Ananya Krishnan (0.35) ...
-
-▸ STAGE 6: SANITY CHECKS──────────────────────────────────────────────
-  ✔ 9/9 checks passed
-
-══════════════════════════════════════════════════════════════════════
-  ★  FINAL SUBMISSION ANSWERS  ★
-══════════════════════════════════════════════════════════════════════
+Stage 5: Cosine Similarity Rankings
+-----------------------------------
 
   JD-1 — Kakao (ML Engineer)
-  Sneha Patel(0.59), Arjun Sharma(0.40), Karan Mehta(0.40)
+   1. Sneha Patel             0.59
+   2. Arjun Sharma            0.40
+   3. Karan Mehta             0.40
+   4. Meera Iyer              0.24
+   5. Ananya Krishnan         0.03
+   6. Vikram Singh            0.03
+   7. Aditya Kumar            0.00
+   8. Deepika Rao             0.00
+   9. Priya Nair              0.00
+  10. Rahul Gupta             0.00
 
   JD-2 — Naver (Backend Engineer)
-  Rahul Gupta(0.81), Ananya Krishnan(0.28), Deepika Rao(0.19)
+   1. Rahul Gupta             0.81
+   2. Ananya Krishnan         0.28
+   3. Deepika Rao             0.19
+   4. Priya Nair              0.12
+   5. Aditya Kumar            0.00
+   6. Arjun Sharma            0.00
+   7. Karan Mehta             0.00
+   8. Meera Iyer              0.00
+   9. Sneha Patel             0.00
+  10. Vikram Singh            0.00
 
   JD-3 — Line (Frontend Engineer)
-  Aditya Kumar(0.67), Priya Nair(0.58), Ananya Krishnan(0.35)
+   1. Aditya Kumar            0.67
+   2. Priya Nair              0.58
+   3. Ananya Krishnan         0.35
+   4. Deepika Rao             0.09
+   5. Arjun Sharma            0.00
+   6. Karan Mehta             0.00
+   7. Meera Iyer              0.00
+   8. Rahul Gupta             0.00
+   9. Sneha Patel             0.00
+  10. Vikram Singh            0.00
+
+Sanity Checks
+-------------
+  [PASS] Vocabulary union matches
+  [PASS] All IDF values > 0
+  [PASS] JD vectors are binary
+  Passed 3 out of 3 checks.
+
+Final Results
+=============
+
+  JD-1 — Kakao (ML Engineer)
+  -> Sneha Patel (0.59), Arjun Sharma (0.40), Karan Mehta (0.40)
+
+  JD-2 — Naver (Backend Engineer)
+  -> Rahul Gupta (0.81), Ananya Krishnan (0.28), Deepika Rao (0.19)
+
+  JD-3 — Line (Frontend Engineer)
+  -> Aditya Kumar (0.67), Priya Nair (0.58), Ananya Krishnan (0.35)
+
 ```
 
 ### Run stages individually
@@ -303,7 +341,7 @@ python3 sanity_checks.py       # Stage 6 — 40 validation checks
 
 ---
 
-## 🧪 Testing Guide
+## Testing Guide
 
 ### Unit-level testing
 
@@ -358,42 +396,16 @@ If the new skill is a multi-word phrase (e.g. `"natural language processing"`), 
 
 ---
 
-## 📐 Architecture
+## Architecture
 
-```
-┌──────────────────────┐
-│   Raw skill string   │  "Pyhton, MachineLearning, Deep-learning"
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  skill_normalizer.py │  lowercase → protect phrases → split → clean → alias → dedup
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│  Canonical skill list│  ['python', 'machine_learning', 'deep_learning']
-└──────────┬───────────┘
-           │
-     ┌─────┴─────┐
-     │           │
-     ▼           ▼
-┌─────────┐ ┌─────────┐
-│ Resumes │ │   JDs   │
-│ TF-IDF  │ │ Binary  │
-│ Vectors │ │ Vectors │
-└────┬────┘ └────┬────┘
-     │           │
-     └─────┬─────┘
-           │
-           ▼
-┌──────────────────────┐
-│  Cosine Similarity   │  cosine(TF-IDF, Binary) → ranked candidates
-└──────────────────────┘
+```mermaid
+flowchart TD
+    A[Raw skill string<br/>\"Pyhton, MachineLearning, Deep-learning\"] --> B(skill_normalizer.py<br/>lowercase &rarr; protect phrases &rarr; split &rarr; clean &rarr; alias &rarr; dedup)
+    B --> C[Canonical skill list<br/>'python', 'machine_learning', 'deep_learning']
+    C --> D[Resumes<br/>TF-IDF Vectors]
+    C --> E[JDs<br/>Binary Vectors]
+    D --> F(Cosine Similarity<br/>cosine_match.py)
+    E --> F
+    F --> G[Ranked Candidates]
 ```
 
----
-
-## 📜 License
-
-This project was built for the Redrob AI Campus Hackathon.

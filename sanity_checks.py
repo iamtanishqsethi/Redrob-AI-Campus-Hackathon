@@ -5,9 +5,7 @@ Validates the entire pipeline: normalization, vocabulary, IDF, vectors, JDs.
 Standard library only.
 """
 
-import io
 import math
-import sys
 from skill_normalizer import normalize_skills, SKILL_ALIASES
 
 # ── Data (identical to previous stages) ─────────────────────────────────────
@@ -42,17 +40,10 @@ JOB_DESCRIPTIONS = {
 TOTAL_DOCS = len(RAW_RESUMES)
 
 
-def silent_normalize(raw: str) -> list[str]:
-    old_stdout = sys.stdout
-    sys.stdout = io.StringIO()
-    result = normalize_skills(raw)
-    sys.stdout = old_stdout
-    return result
+
 
 
 def main():
-    sep = "═" * 80
-    thin = "─" * 80
     passed = 0
     failed = 0
     total = 0
@@ -62,15 +53,14 @@ def main():
         total += 1
         if condition:
             passed += 1
-            print(f"  ✔ PASS  {label}")
+            print(f"  [PASS] {label}")
         else:
             failed += 1
-            print(f"  ✘ FAIL  {label}")
+            print(f"  [FAIL] {label}")
         if detail:
-            print(f"          {detail}")
+            print(f"         {detail}")
 
-    # ── Rebuild all pipeline state ──────────────────────────────────────
-    resumes = [(name, silent_normalize(raw)) for name, raw in RAW_RESUMES]
+    resumes = [(name, normalize_skills(raw)) for name, raw in RAW_RESUMES]
 
     vocab_set = set()
     for _, skills in resumes:
@@ -98,7 +88,7 @@ def main():
     jd_skills_map = {}
     for jd_name, sections in JOB_DESCRIPTIONS.items():
         combined = sections["required"] + ", " + sections["preferred"]
-        jd_skills = set(silent_normalize(combined))
+        jd_skills = set(normalize_skills(combined))
         jd_skills_map[jd_name] = jd_skills
         vec = [0.0] * V
         for skill in jd_skills:
@@ -106,12 +96,8 @@ def main():
                 vec[skill_to_idx[skill]] = 1.0
         jd_vectors[jd_name] = vec
 
-    # ════════════════════════════════════════════════════════════════════
-    # CHECK 1: Normalization aliases
-    # ════════════════════════════════════════════════════════════════════
-    print(sep)
-    print("  CHECK 1: NORMALIZATION ALIASES")
-    print(sep)
+    print("\nCHECK 1: NORMALIZATION ALIASES")
+    print("==============================")
 
     # 1a. "Sklearn" → machine_learning
     check(
@@ -158,19 +144,15 @@ def main():
         ("matplotlib", ["data_visualization"]),
     ]
     for raw_in, expected in test_cases:
-        result = silent_normalize(raw_in)
+        result = normalize_skills(raw_in)
         check(
             f'normalize("{raw_in}") → {expected}',
             result == expected,
             f"Got: {result}",
         )
 
-    # ════════════════════════════════════════════════════════════════════
-    # CHECK 2: Vocabulary integrity
-    # ════════════════════════════════════════════════════════════════════
-    print(f"\n{sep}")
-    print("  CHECK 2: VOCABULARY INTEGRITY")
-    print(sep)
+    print("\nCHECK 2: VOCABULARY INTEGRITY")
+    print("=============================")
 
     # 2a. Size
     print(f"  Vocabulary size: {V}")
@@ -202,12 +184,8 @@ def main():
         len(vocabulary) == len(set(vocabulary)),
     )
 
-    # ════════════════════════════════════════════════════════════════════
-    # CHECK 3: IDF values
-    # ════════════════════════════════════════════════════════════════════
-    print(f"\n{sep}")
-    print("  CHECK 3: IDF VALUES")
-    print(sep)
+    print("\nCHECK 3: IDF VALUES")
+    print("===================")
 
     # Highest IDF = skills with df=1 → IDF = ln(10)
     max_idf_expected = math.log(TOTAL_DOCS)
@@ -242,12 +220,8 @@ def main():
         all_positive,
     )
 
-    # ════════════════════════════════════════════════════════════════════
-    # CHECK 4: Resume vector bounds
-    # ════════════════════════════════════════════════════════════════════
-    print(f"\n{sep}")
-    print("  CHECK 4: RESUME VECTOR BOUNDS")
-    print(sep)
+    print("\nCHECK 4: RESUME VECTOR BOUNDS")
+    print("=============================")
 
     any_over_1 = False
     for name, vec in resume_vectors.items():
@@ -272,12 +246,8 @@ def main():
         all_correct_len,
     )
 
-    # ════════════════════════════════════════════════════════════════════
-    # CHECK 5: JD binary vectors — no 1s outside vocabulary
-    # ════════════════════════════════════════════════════════════════════
-    print(f"\n{sep}")
-    print("  CHECK 5: JD BINARY VECTOR INTEGRITY")
-    print(sep)
+    print("\nCHECK 5: JD BINARY VECTOR INTEGRITY")
+    print("===================================")
 
     for jd_name, vec in jd_vectors.items():
         # 5a. Vector length
@@ -316,24 +286,19 @@ def main():
         # 5e. Report skills that normalized but aren't in vocab (expected for pytorch, redis)
         outside_vocab = jd_canonical - vocab_set
         if outside_vocab:
-            print(f"          ℹ Skills normalized but outside resume vocabulary "
+            print(f"         INFO: Skills normalized but outside resume vocabulary "
                   f"(correctly excluded): {sorted(outside_vocab)}")
 
-    # ════════════════════════════════════════════════════════════════════
-    # SUMMARY
-    # ════════════════════════════════════════════════════════════════════
-    print(f"\n{sep}")
-    print("  SANITY CHECK SUMMARY")
-    print(sep)
-    print(f"  Total checks: {total}")
-    print(f"  Passed:       {passed}  ✔")
-    print(f"  Failed:       {failed}  {'✘' if failed else ''}")
-    print()
+    print("\nSANITY CHECK SUMMARY")
+    print("====================")
+    print(f"Total checks: {total}")
+    print(f"Passed:       {passed}")
+    print(f"Failed:       {failed}\n")
+
     if failed == 0:
-        print("  🎉 ALL CHECKS PASSED — Pipeline is consistent end-to-end.")
+        print("ALL CHECKS PASSED - Pipeline is consistent end-to-end.")
     else:
-        print(f"  ⚠  {failed} CHECK(S) FAILED — Review above for details.")
-    print(sep)
+        print(f"{failed} CHECK(S) FAILED - Review above for details.")
 
 
 if __name__ == "__main__":

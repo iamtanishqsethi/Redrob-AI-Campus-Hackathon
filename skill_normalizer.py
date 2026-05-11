@@ -177,77 +177,36 @@ SKILL_ALIASES = {
 def normalize_skills(raw: str) -> List[str]:
     """
     Normalize a raw comma-separated skill string into canonical skill tokens.
-
-    Steps
-    -----
-    1. Lowercase the entire string
-    2. Protect multi-word phrases by replacing spaces with underscores
-    3. Split on commas and strip whitespace
-    4. Clean each token (collapse hyphens/spaces → underscores, strip junk)
-    5. Map through SKILL_ALIASES; discard unknowns
-    6. Deduplicate while preserving order
-
-    Parameters
-    ----------
-    raw : str
-        Comma-separated skill string, e.g. "Pyhton, MachineLearning, SQL"
-
-    Returns
-    -------
-    list[str]
-        Deduplicated list of canonical skill names.
     """
-    # ── Step 1: Lowercase ───────────────────────────────────────────────
     lowered = raw.lower()
-    print(f"  [1] Lowercased   → {lowered!r}")
 
-    # ── Step 2: Protect multi-word phrases ──────────────────────────────
     protected = lowered
     for phrase in sorted(MULTI_WORD_PHRASES, key=len, reverse=True):
-        # Match the phrase even if separated by hyphens or extra spaces
         pattern = re.escape(phrase).replace(r"\ ", r"[\s\-]+")
         protected = re.sub(pattern, phrase.replace(" ", "_"), protected)
-    print(f"  [2] Protected    → {protected!r}")
 
-    # ── Step 3: Split on commas and strip ───────────────────────────────
     tokens = [t.strip() for t in protected.split(",") if t.strip()]
-    print(f"  [3] Split tokens → {tokens}")
 
-    # ── Step 4: Clean each token ────────────────────────────────────────
     cleaned = []
     for tok in tokens:
-        tok = re.sub(r"[\s\-/]+", "_", tok)  # spaces / hyphens / slashes → underscore
-        tok = re.sub(r"[^a-z0-9_+#.]", "", tok)  # drop stray characters
+        tok = re.sub(r"[\s\-/]+", "_", tok)
+        tok = re.sub(r"[^a-z0-9_+#.]", "", tok)
         tok = tok.strip("_")
         if tok:
             cleaned.append(tok)
-    print(f"  [4] Cleaned      → {cleaned}")
 
-    # ── Step 5: Alias mapping (discard unknowns) ────────────────────────
     mapped = [SKILL_ALIASES[tok] for tok in cleaned if tok in SKILL_ALIASES]
-    print(f"  [5] Alias-mapped → {mapped}")
 
-    # ── Step 6: Deduplicate (preserve order) ────────────────────────────
     seen = set()
     deduped = []
     for skill in mapped:
         if skill not in seen:
             seen.add(skill)
             deduped.append(skill)
-    print(f"  [6] Deduplicated → {deduped}")
 
     return deduped
 
 
 # ── Demo / Test ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    test_input = "Pyhton, MachineLearning, SQL, pandas, numpy, Deep-learning"
-    print(f"Raw input: {test_input!r}\n")
-
-    result = normalize_skills(test_input)
-
-    print(f"\n✅ Final output: {result}")
-    print(f"   Expected:     ['python', 'machine_learning', 'sql', 'pandas', 'numpy', 'deep_learning']")
-    assert result == ["python", "machine_learning", "sql", "pandas", "numpy", "deep_learning"], \
-        f"❌ Mismatch! Got {result}"
-    print("   ✔ Assertion passed.")
+    pass

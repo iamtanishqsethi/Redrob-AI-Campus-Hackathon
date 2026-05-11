@@ -6,9 +6,7 @@ over the shared 50-skill vocabulary, then ranks candidates per JD using
 cosine similarity.  Standard library only.
 """
 
-import io
 import math
-import sys
 from skill_normalizer import normalize_skills
 
 # ── Data ────────────────────────────────────────────────────────────────────
@@ -43,13 +41,7 @@ JOB_DESCRIPTIONS = {
 TOTAL_DOCS = len(RAW_RESUMES)  # 10
 
 
-# ── Helpers ─────────────────────────────────────────────────────────────────
-def silent_normalize(raw: str) -> list[str]:
-    old_stdout = sys.stdout
-    sys.stdout = io.StringIO()
-    result = normalize_skills(raw)
-    sys.stdout = old_stdout
-    return result
+
 
 
 def dot_product(a: list[float], b: list[float]) -> float:
@@ -69,13 +61,11 @@ def cosine_similarity(a: list[float], b: list[float]) -> float:
 
 
 def main():
-    sep = "═" * 80
-    thin = "─" * 80
+    print("Stage 5: Cosine Similarity - Resume x JD Matching")
+    print("=================================================\n")
 
-    # ── 1. Normalize all resumes ────────────────────────────────────────
-    resumes = [(name, silent_normalize(raw)) for name, raw in RAW_RESUMES]
+    resumes = [(name, normalize_skills(raw)) for name, raw in RAW_RESUMES]
 
-    # ── 2. Build shared vocabulary ──────────────────────────────────────
     vocab_set = set()
     for _, skills in resumes:
         vocab_set.update(skills)
@@ -83,14 +73,12 @@ def main():
     V = len(vocabulary)
     skill_to_idx = {s: i for i, s in enumerate(vocabulary)}
 
-    # ── 3. Compute df and IDF ───────────────────────────────────────────
     df = {}
     for skill in vocabulary:
         df[skill] = sum(1 for _, skills in resumes if skill in skills)
 
     idf = {skill: math.log(TOTAL_DOCS / df[skill]) for skill in vocabulary}
 
-    # ── 4. Build resume TF-IDF vectors (length V) ──────────────────────
     resume_vectors = {}
     for name, skills in resumes:
         n = len(skills)
@@ -101,21 +89,15 @@ def main():
             vec[idx] = tf * idf[skill]
         resume_vectors[name] = vec
 
-    # ── 5. Build JD binary vectors (length V) ──────────────────────────
     jd_vectors = {}
     for jd_name, sections in JOB_DESCRIPTIONS.items():
         combined = sections["required"] + ", " + sections["preferred"]
-        jd_skills = set(silent_normalize(combined))
+        jd_skills = set(normalize_skills(combined))
         vec = [0.0] * V
         for skill in jd_skills:
             if skill in skill_to_idx:
                 vec[skill_to_idx[skill]] = 1.0
         jd_vectors[jd_name] = vec
-
-    # ── 6. Compute cosine similarity for all pairs ──────────────────────
-    print(sep)
-    print("  STAGE 5: COSINE SIMILARITY — RESUME × JD MATCHING")
-    print(sep)
 
     all_rankings = {}
 
@@ -125,50 +107,34 @@ def main():
             sim = cosine_similarity(res_vec, jd_vec)
             scores.append((name, sim))
 
-        # Sort: descending score, then alphabetically by first name on tie
         scores.sort(key=lambda x: (-round(x[1], 2), x[0].split()[0]))
         all_rankings[jd_name] = scores
 
-    # ── 7. Print full ranked list per JD ────────────────────────────────
     for jd_name, scores in all_rankings.items():
-        print(f"\n{thin}")
-        print(f"  {jd_name}")
-        print(thin)
-        print(f"  {'Rank':>4s}  {'Candidate':<22s}  {'Score':>8s}  {'Bar'}")
-        print(f"  {'─' * 4}  {'─' * 22}  {'─' * 8}  {'─' * 30}")
-
+        print(f"\n{jd_name}")
+        print("-" * len(jd_name))
         for rank, (name, sim) in enumerate(scores, start=1):
-            rounded = round(sim, 2)
-            bar_len = int(rounded * 40)
-            bar = "█" * bar_len + "░" * (40 - bar_len)
-            marker = " ◀ TOP 3" if rank <= 3 else ""
-            print(f"  {rank:>4d}  {name:<22s}  {rounded:>8.2f}  {bar}{marker}")
+            print(f"  {rank:>2d}. {name:<22s} Score: {round(sim, 2):.2f}")
 
-    # ── 8. Final summary: Top 3 per JD ──────────────────────────────────
-    print(f"\n{sep}")
-    print("  FINAL RESULTS — TOP 3 PER JD")
-    print(sep)
+    print("\nFinal Results - Top 3 Per JD")
+    print("============================\n")
 
     for jd_name, scores in all_rankings.items():
         top3 = scores[:3]
-        formatted = ", ".join(f"{name}({round(sim, 2):.2f})" for name, sim in top3)
-        print(f"\n  {jd_name}")
-        print(f"  {formatted}")
+        formatted = ", ".join(f"{name} ({round(sim, 2):.2f})" for name, sim in top3)
+        print(f"{jd_name}")
+        print(f"  -> {formatted}\n")
 
-    # ── 9. Cross-check: show which skills matched ───────────────────────
-    print(f"\n{sep}")
-    print("  MATCH DETAIL — TOP 1 PER JD (skill-level breakdown)")
-    print(sep)
+    print("\nMatch Detail - Top 1 Per JD (Skill-level breakdown)")
+    print("===================================================\n")
 
     for jd_name, scores in all_rankings.items():
         top_name = scores[0][0]
         top_score = scores[0][1]
 
-        # Find matching skills
-        jd_skills_set = set()
         sections = JOB_DESCRIPTIONS[jd_name]
         combined = sections["required"] + ", " + sections["preferred"]
-        jd_skills_set = set(silent_normalize(combined)) & vocab_set
+        jd_skills_set = set(normalize_skills(combined)) & vocab_set
 
         resume_skills = set(
             s for _, skills in resumes if _ == top_name for s in skills
@@ -177,12 +143,10 @@ def main():
         matched = sorted(jd_skills_set & resume_skills)
         missed = sorted(jd_skills_set - resume_skills)
 
-        print(f"\n  {jd_name}")
-        print(f"  Best match: {top_name} (cosine = {round(top_score, 2):.2f})")
-        print(f"    ✔ Matched skills ({len(matched)}): {matched}")
-        print(f"    ✘ Missing skills ({len(missed)}):  {missed}")
-
-    print(f"\n{sep}")
+        print(f"{jd_name}")
+        print(f"Best match: {top_name} (cosine = {round(top_score, 2):.2f})")
+        print(f"  Matched skills: {matched}")
+        print(f"  Missing skills: {missed}\n")
 
 
 if __name__ == "__main__":

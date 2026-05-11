@@ -24,36 +24,27 @@ RESUMES = [
 
 
 def main():
-    separator = "═" * 72
-
-    print(separator)
-    print("  SKILL NORMALIZATION — 10 RESUMES")
-    print(separator)
+    print("Skill Normalization - 10 Resumes")
+    print("================================")
 
     all_results = {}
 
     for idx, (name, raw_skills) in enumerate(RESUMES, start=1):
-        print(f"\n{'─' * 72}")
-        print(f"  [{idx:02d}] {name}")
-        print(f"  Raw: {raw_skills!r}")
-        print(f"{'─' * 72}")
+        print(f"\n[{idx:02d}] {name}")
+        print(f"Raw: {raw_skills!r}")
 
         normalized = normalize_skills(raw_skills)
         all_results[name] = normalized
 
-        print(f"\n  ✅ {name}: {normalized}\n")
+        print(f"Normalized: {normalized}\n")
 
-    # ── Summary table ───────────────────────────────────────────────────
-    print("\n" + separator)
-    print("  SUMMARY")
-    print(separator)
+    print("\nSummary")
+    print("=======")
     for name, skills in all_results.items():
         print(f"  {name:<20s} → {skills}")
 
-    # ── Validation checks ───────────────────────────────────────────────
-    print("\n" + separator)
-    print("  VALIDATION CHECKS")
-    print(separator)
+    print("\nValidation Checks")
+    print("=================")
 
     checks = [
         ("Karan Mehta",   "Sklearn → machine_learning",    "machine_learning",    all_results["Karan Mehta"]),
@@ -65,18 +56,16 @@ def main():
     all_passed = True
     for candidate, label, expected, skills in checks:
         passed = expected in skills
-        status = "✔ PASS" if passed else "✘ FAIL"
-        print(f"  {status}  {candidate}: {label}  (in {skills})")
+        status = "PASS" if passed else "FAIL"
+        print(f"  [{status}] {candidate}: {label} (in {skills})")
         if not passed:
             all_passed = False
 
     print()
     if all_passed:
-        print("  🎉 All validation checks passed!")
+        print("  All validation checks passed!")
     else:
-        print("  ❌ Some checks failed — review alias map.")
-
-    print(separator)
+        print("  Some checks failed - review alias map.")
 
 
 if __name__ == "__main__":
